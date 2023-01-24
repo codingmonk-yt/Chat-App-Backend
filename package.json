@@ -8,5 +8,10 @@
     "start": "node server.js"
   },
   "author": "SHREYANSH SHAH",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "crypto": "^1.0.1",
+    "otp-generator": "^4.0.0"
+  }
 }
