@@ -228,7 +228,10 @@ exports.forgotPassword = async (req, res, next) => {
   // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
-    return next(new AppError("There is no user with email address.", 404));
+    return res.status(404).json({
+      status: "error",
+      message: "There is no user with email address.",
+    });
   }
 
   // 2) Generate the random reset token
@@ -259,7 +262,6 @@ exports.forgotPassword = async (req, res, next) => {
 };
 
 exports.resetPassword = async (req, res, next) => {
-
   // 1) Get user based on the token
   const hashedToken = crypto
     .createHash("sha256")
@@ -273,7 +275,9 @@ exports.resetPassword = async (req, res, next) => {
 
   // 2) If token has not expired, and there is user, set the new password
   if (!user) {
-    return next(new AppError("Token is invalid or has expired", 400));
+    return res.status(400).json({
+      status: "error",
+    });
   }
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
@@ -285,5 +289,5 @@ exports.resetPassword = async (req, res, next) => {
   // 4) Log the user in, send JWT
   res.status(200).json({
     status: "success",
-  })
+  });
 };
