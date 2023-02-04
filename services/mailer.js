@@ -24,7 +24,6 @@ const sendSGMail = async ({
       attachments,
     };
 
-    console.log(msg);
     
     return sgMail.send(msg);
   } catch (error) {
