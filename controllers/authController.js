@@ -9,6 +9,7 @@ const filterObj = require("../utils/filterObj");
 const User = require("../models/user");
 const otp = require("../Templates/Mail/otp");
 const resetPassword = require("../Templates/Mail/resetPassword");
+const { promisify } = require("util");
 
 // this function will return you jwt token
 const signToken = (userId) => jwt.sign({ userId }, process.env.JWT_SECRET);
@@ -202,9 +203,11 @@ exports.protect = async (req, res, next) => {
   // 2) Verification of token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
+  console.log(decoded);
+
   // 3) Check if user still exists
 
-  const this_user = await User.findById(decoded.id);
+  const this_user = await User.findById(decoded.userId);
   if (!this_user) {
     return next(
       new AppError(
@@ -243,6 +246,8 @@ exports.forgotPassword = async (req, res, next) => {
   try {
     const resetURL = `http://localhost:3000/auth/new-password?token=${resetToken}`;
     // TODO => Send Email with this Reset URL to user's email address
+
+    console.log(resetURL);
 
     mailService.sendEmail({
       from: "shreyanshshah242@gmail.com",

@@ -13,6 +13,17 @@ const app = require("./app");
 const http = require("http");
 const server = http.createServer(app);
 
+const { Server } = require('socket.io'); // Add this
+
+// Add this
+// Create an io server and allow for CORS from http://localhost:3000 with GET and POST methods
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+  },
+});
+
 const DB = process.env.DATABASE.replace(
     "<PASSWORD>",
     process.env.DATABASE_PASSWORD
@@ -36,6 +47,19 @@ const port = process.env.PORT || 8000;
 
 server.listen(port, () => {
   console.log(`App running on port ${port} ...`);
+});
+
+// Add this
+// Listen for when the client connects via socket.io-client
+io.on('connection', (socket) => {
+  console.log(`User connected ${socket.id}`);
+
+  // We can write our socket event listeners in here...
+  socket.on("friend_request", (data) => {
+    console.log(data);
+    // create a friend request
+    // emit event request received to recipient
+  });
 });
 
 process.on("unhandledRejection", (err) => {

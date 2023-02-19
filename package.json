@@ -26,6 +26,7 @@
     "mongoose": "^6.9.0",
     "morgan": "^1.10.0",
     "otp-generator": "^4.0.0",
+    "socket.io": "^4.6.0",
     "xss-clean": "^0.1.1"
   }
 }
