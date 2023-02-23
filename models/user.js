@@ -68,6 +68,9 @@ const userSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
+  socket_id: {
+    type: String
+  }
 });
 
 userSchema.pre("save", async function (next) {
