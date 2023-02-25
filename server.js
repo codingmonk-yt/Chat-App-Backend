@@ -56,10 +56,9 @@ io.on("connection", async (socket) => {
 
   console.log(`User connected ${socket.id}`)
 
-  if(user_id) {
+  if(user_id*1 !== 0 && Boolean(user_id)) {
     await User.findByIdAndUpdate(user_id, {socket_id: socket.id});
   }
-
 
   // We can write our socket event listeners in here...
   socket.on("friend_request", async (data) => {

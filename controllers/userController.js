@@ -25,10 +25,6 @@ exports.getUsers = async (req, res, next) => {
     verified: true,
   }).select("firstName lastName _id");
 
-  // const all_requests = await FriendRequest.find({
-  //   $or: [{ sender: req.user._id }, { recipient: req.user._id }],
-  // });
-
   const this_user = req.user;
 
   const remaining_users = all_users.filter(
@@ -37,11 +33,33 @@ exports.getUsers = async (req, res, next) => {
       user._id.toString() !== req.user._id.toString()
   );
 
-  
-
   res.status(200).json({
     status: "success",
     data: remaining_users,
     message: "Users found successfully!",
+  });
+};
+
+exports.getRequests = async (req, res, next) => {
+  const requests = await FriendRequest.find({ recipient: req.user._id })
+    .populate("sender")
+    .select("_id firstName lastName");
+
+  res.status(200).json({
+    status: "success",
+    data: requests,
+    message: "Requests found successfully!",
+  });
+};
+
+exports.getFriends = async (req, res, next) => {
+  const friends = await User.findById(req.user._id).populate(
+    "friends",
+    "_id firstName lastName"
+  );
+  res.status(200).json({
+    status: "success",
+    data: friends,
+    message: "Friends found successfully!",
   });
 };
