@@ -197,9 +197,9 @@ exports.protect = async (req, res, next) => {
   }
 
   if (!token) {
-    return next(
-      new AppError(`You are not logged in! Please log in to get access.`, 401)
-    );
+    return res.status(401).json({
+      message: "You are not logged in! Please log in to get access."
+    });
   }
   // 2) Verification of token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
@@ -210,18 +210,15 @@ exports.protect = async (req, res, next) => {
 
   const this_user = await User.findById(decoded.userId);
   if (!this_user) {
-    return next(
-      new AppError(
-        "The user belonging to this token does no longer exists.",
-        401
-      )
-    );
+    return res.status(401).json({
+      message: "The user belonging to this token does no longer exists.",
+    })
   }
   // 4) Check if user changed password after the token was issued
   if (this_user.changedPasswordAfter(decoded.iat)) {
-    return next(
-      new AppError("User recently changed password! Please log in again.", 401)
-    );
+    return res.status(401).json({
+      message: "User recently changed password! Please log in again.",
+    });
   }
 
   // GRANT ACCESS TO PROTECTED ROUTE
@@ -267,10 +264,9 @@ exports.forgotPassword = async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
-    return next(
-      new AppError("There was an error sending the email. Try again later!"),
-      500
-    );
+    return res.status(500).json({
+      message: "There was an error sending the email. Try again later!",
+    });
   }
 };
 
