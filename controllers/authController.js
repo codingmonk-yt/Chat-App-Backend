@@ -136,6 +136,7 @@ exports.verifyOTP = async (req, res, next) => {
     status: "success",
     message: "OTP verified Successfully!",
     token,
+    user_id: user._id,
   });
 };
 
@@ -198,7 +199,7 @@ exports.protect = async (req, res, next) => {
 
   if (!token) {
     return res.status(401).json({
-      message: "You are not logged in! Please log in to get access."
+      message: "You are not logged in! Please log in to get access.",
     });
   }
   // 2) Verification of token
@@ -212,7 +213,7 @@ exports.protect = async (req, res, next) => {
   if (!this_user) {
     return res.status(401).json({
       message: "The user belonging to this token does no longer exists.",
-    })
+    });
   }
   // 4) Check if user changed password after the token was issued
   if (this_user.changedPasswordAfter(decoded.iat)) {
