@@ -23,6 +23,7 @@ const oneToOneMessageSchema = new mongoose.Schema({
       },
       created_at: {
         type: Date,
+        default: Date.now(),
       },
       text: {
         type: String,
