@@ -155,9 +155,9 @@ io.on("connection", async (socket) => {
 
       socket.emit("start_chat", new_chat);
     }
-    // if yes => just emit event "open_chat" & send conversation details as payload
+    // if yes => just emit event "start_chat" & send conversation details as payload
     else {
-      socket.emit("open_chat", existing_conversations[0]);
+      socket.emit("start_chat", existing_conversations[0]);
     }
   });
 
@@ -190,7 +190,7 @@ io.on("connection", async (socket) => {
     // fetch OneToOneMessage Doc & push a new message to existing conversation
     const chat = await OneToOneMessage.findById(conversation_id);
     chat.messages.push(new_message);
-    // save to db
+    // save to db`
     await chat.save({ new: true, validateModifiedOnly: true });
 
     // emit incoming_message -> to user
