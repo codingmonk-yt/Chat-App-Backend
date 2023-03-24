@@ -55,6 +55,7 @@ function generateToken04(
   effectiveTimeInSeconds,
   payload
 ) {
+  
   if (!appId || typeof appId !== "number") {
     throw {
       errorCode: ErrorCode.appIDInvalid,
