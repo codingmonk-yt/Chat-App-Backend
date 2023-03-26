@@ -238,26 +238,83 @@ io.on("connection", async (socket) => {
   // handle audio_call_not_picked
   socket.on("audio_call_not_picked", async (data) => {
     // find and update call record
+    const { to, from } = data;
+
+    const to_user = await User.findById(from);
+
+    await AudioCall.findOneAndUpdate(
+      {
+        participants: { $size: 2, $all: [to, from] },
+      },
+      { verdict: "Missed", status: "Ended", endedAt: Date.now() }
+    );
+
     // TODO => emit call_missed to receiver of call
+    io.to(to_user.socket_id).emit("call_accepted", {
+      from,
+      to,
+    });
   });
 
   // handle audio_call_accepted
   socket.on("audio_call_accepted", async (data) => {
+    const { to, from } = data;
+
+    const from_user = await User.findById(from);
+
     // find and update call record
+    await AudioCall.findOneAndUpdate(
+      {
+        participants: { $size: 2, $all: [to, from] },
+      },
+      { verdict: "Accepted" }
+    );
+
     // TODO => emit call_accepted to sender of call
+    io.to(from_user.socket_id).emit("call_accepted", {
+      from,
+      to,
+    });
   });
 
   // handle audio_call_denied
   socket.on("audio_call_denied", async (data) => {
     // find and update call record
+    const { to, from } = data;
+
+    await AudioCall.findOneAndUpdate(
+      {
+        participants: { $size: 2, $all: [to, from] },
+      },
+      { verdict: "Denied", status: "Ended", endedAt: Date.now() }
+    );
+
+    const from_user = await User.findById(from);
     // TODO => emit call_denied to sender of call
+
+    io.to(from_user.socket_id).emit("call_denied", {
+      from,
+      to,
+    });
   });
 
   // handle user_is_busy_audio_call
   socket.on("user_is_busy_audio_call", async (data) => {
+    const { to, from } = data;
     // find and update call record
+    await AudioCall.findOneAndUpdate(
+      {
+        participants: { $size: 2, $all: [to, from] },
+      },
+      { verdict: "Busy", status: "Ended", endedAt: Date.now() }
+    );
+
+    const from_user = await User.findById(from);
     // TODO => emit on_another_audio_call to sender of call
-    
+    io.to(from_user.socket_id).emit("on_another_audio_call", {
+      from,
+      to,
+    });
   });
 
   // handle Media/Document Message

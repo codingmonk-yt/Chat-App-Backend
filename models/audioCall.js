@@ -17,7 +17,7 @@ const audioCallSchema = new mongoose.Schema({
   },
   verdict: {
     type: String,
-    enum: ["Accepted", "Denied", "Missed"],
+    enum: ["Accepted", "Denied", "Missed", "Busy"],
   },
   status: {
     type: String,
