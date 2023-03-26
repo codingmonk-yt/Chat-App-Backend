@@ -95,7 +95,7 @@ exports.generateZegoToken = async (req, res, next) => {
   const payload = JSON.stringify(payloadObject);
   // Build token
   const token = generateToken04(
-    appID*1,
+    appID*1, // APP ID NEEDS TO BE A NUMBER
     userId,
     serverSecret,
     effectiveTimeInSeconds,

@@ -19,6 +19,7 @@ const { promisify } = require("util");
 const User = require("./models/user");
 const FriendRequest = require("./models/friendRequest");
 const OneToOneMessage = require("./models/OneToOneMessage");
+const AudioCall = require("./models/audioCall");
 
 // Add this
 // Create an io server and allow for CORS from http://localhost:3000 with GET and POST methods
@@ -162,7 +163,9 @@ io.on("connection", async (socket) => {
   });
 
   socket.on("get_messages", async (data, callback) => {
-   const {messages} = await OneToOneMessage.findById(data.conversation_id).select("messages");
+    const { messages } = await OneToOneMessage.findById(
+      data.conversation_id
+    ).select("messages");
     callback(messages);
   });
 
@@ -205,6 +208,56 @@ io.on("connection", async (socket) => {
       conversation_id,
       message: new_message,
     });
+  });
+
+  // handle start_audio_call event
+  socket.on("start_audio_call", async (data) => {
+    const { from, to, roomID } = data;
+
+    const to_user = await User.findById(to);
+    const from_user = await User.findById(from);
+
+    // create a new audio call record === log
+    await AudioCall.create({
+      participants: [from, to],
+      from,
+      to,
+      status: "Ongoing",
+    });
+
+    // send notification to receiver of call
+    io.to(to_user.socket_id).emit("audio_call_notification", {
+      from: from_user,
+      roomID,
+      streamID: from,
+      userID: to,
+      userName: to,
+    });
+  });
+
+  // handle audio_call_not_picked
+  socket.on("audio_call_not_picked", async (data) => {
+    // find and update call record
+    // TODO => emit call_missed to receiver of call
+  });
+
+  // handle audio_call_accepted
+  socket.on("audio_call_accepted", async (data) => {
+    // find and update call record
+    // TODO => emit call_accepted to sender of call
+  });
+
+  // handle audio_call_denied
+  socket.on("audio_call_denied", async (data) => {
+    // find and update call record
+    // TODO => emit call_denied to sender of call
+  });
+
+  // handle user_is_busy_audio_call
+  socket.on("user_is_busy_audio_call", async (data) => {
+    // find and update call record
+    // TODO => emit on_another_audio_call to sender of call
+    
   });
 
   // handle Media/Document Message
