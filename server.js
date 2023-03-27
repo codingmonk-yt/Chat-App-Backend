@@ -237,10 +237,11 @@ io.on("connection", async (socket) => {
 
   // handle audio_call_not_picked
   socket.on("audio_call_not_picked", async (data) => {
+    console.log(data);
     // find and update call record
     const { to, from } = data;
 
-    const to_user = await User.findById(from);
+    const to_user = await User.findById(to);
 
     await AudioCall.findOneAndUpdate(
       {
@@ -250,7 +251,7 @@ io.on("connection", async (socket) => {
     );
 
     // TODO => emit call_missed to receiver of call
-    io.to(to_user.socket_id).emit("call_accepted", {
+    io.to(to_user.socket_id).emit("call_missed", {
       from,
       to,
     });
