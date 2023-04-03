@@ -15,6 +15,13 @@ const appID = process.env.ZEGO_APP_ID; // type: number
 // Example：'sdfsdfsd323sdfsdf'
 const serverSecret = process.env.ZEGO_SERVER_SECRET; // type: 32 byte length string
 
+exports.getMe = catchAsync(async (req, res, next) => {
+  res.status(200).json({
+    status: "success",
+    data: req.user,
+  });
+});
+
 exports.updateMe = catchAsync(async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,
@@ -98,7 +105,7 @@ exports.getFriends = catchAsync(async (req, res, next) => {
  */
 
 exports.generateZegoToken = catchAsync(async (req, res, next) => {
-  try{
+  try {
     const { userId, room_id } = req.body;
 
     console.log(userId, room_id, "from generate zego token");
@@ -128,11 +135,9 @@ exports.generateZegoToken = catchAsync(async (req, res, next) => {
       message: "Token generated successfully",
       token,
     });
-  }
-  catch(err) {
+  } catch (err) {
     console.log(err);
   }
-  
 });
 
 exports.startAudioCall = catchAsync(async (req, res, next) => {
