@@ -10,13 +10,16 @@ const User = require("../models/user");
 const otp = require("../Templates/Mail/otp");
 const resetPassword = require("../Templates/Mail/resetPassword");
 const { promisify } = require("util");
+const catchAsync = require("../utils/catchAsync");
 
 // this function will return you jwt token
 const signToken = (userId) => jwt.sign({ userId }, process.env.JWT_SECRET);
 
 // Register New User
 
-exports.register = async (req, res, next) => {
+
+
+exports.register = catchAsync(async (req, res, next) => {
   const { firstName, lastName, email, password } = req.body;
 
   const filteredBody = filterObj(
@@ -56,9 +59,9 @@ exports.register = async (req, res, next) => {
     req.userId = new_user._id;
     next();
   }
-};
+});
 
-exports.sendOTP = async (req, res, next) => {
+exports.sendOTP = catchAsync(async (req, res, next) => {
   const { userId } = req;
   const new_otp = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
@@ -91,9 +94,9 @@ exports.sendOTP = async (req, res, next) => {
     status: "success",
     message: "OTP Sent Successfully!",
   });
-};
+});
 
-exports.verifyOTP = async (req, res, next) => {
+exports.verifyOTP = catchAsync(async (req, res, next) => {
   // verify otp and update user accordingly
   const { email, otp } = req.body;
   const user = await User.findOne({
@@ -138,10 +141,10 @@ exports.verifyOTP = async (req, res, next) => {
     token,
     user_id: user._id,
   });
-};
+});
 
 // User Login
-exports.login = async (req, res, next) => {
+exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   // console.log(email, password);
@@ -182,10 +185,10 @@ exports.login = async (req, res, next) => {
     token,
     user_id: user._id,
   });
-};
+});
 
 // Protect
-exports.protect = async (req, res, next) => {
+exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check if it's there
   let token;
   if (
@@ -225,9 +228,9 @@ exports.protect = async (req, res, next) => {
   // GRANT ACCESS TO PROTECTED ROUTE
   req.user = this_user;
   next();
-};
+});
 
-exports.forgotPassword = async (req, res, next) => {
+exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
@@ -269,9 +272,9 @@ exports.forgotPassword = async (req, res, next) => {
       message: "There was an error sending the email. Try again later!",
     });
   }
-};
+});
 
-exports.resetPassword = async (req, res, next) => {
+exports.resetPassword = catchAsync(async (req, res, next) => {
   // 1) Get user based on the token
   const hashedToken = crypto
     .createHash("sha256")
@@ -305,4 +308,4 @@ exports.resetPassword = async (req, res, next) => {
     message: "Password Reseted Successfully",
     token,
   });
-};
+});

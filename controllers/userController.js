@@ -1,5 +1,8 @@
+const AudioCall = require("../models/audioCall");
 const FriendRequest = require("../models/friendRequest");
 const User = require("../models/user");
+const VideoCall = require("../models/videoCall");
+const catchAsync = require("../utils/catchAsync");
 const filterObj = require("../utils/filterObj");
 
 const { generateToken04 } = require("./zegoServerAssistant");
@@ -12,7 +15,7 @@ const appID = process.env.ZEGO_APP_ID; // type: number
 // Example：'sdfsdfsd323sdfsdf'
 const serverSecret = process.env.ZEGO_SERVER_SECRET; // type: 32 byte length string
 
-exports.updateMe = async (req, res, next) => {
+exports.updateMe = catchAsync(async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,
     "firstName",
@@ -28,9 +31,9 @@ exports.updateMe = async (req, res, next) => {
     data: userDoc,
     message: "User Updated successfully",
   });
-};
+});
 
-exports.getUsers = async (req, res, next) => {
+exports.getUsers = catchAsync(async (req, res, next) => {
   const all_users = await User.find({
     verified: true,
   }).select("firstName lastName _id");
@@ -48,9 +51,25 @@ exports.getUsers = async (req, res, next) => {
     data: remaining_users,
     message: "Users found successfully!",
   });
-};
+});
 
-exports.getRequests = async (req, res, next) => {
+exports.getAllVerifiedUsers = catchAsync(async (req, res, next) => {
+  const all_users = await User.find({
+    verified: true,
+  }).select("firstName lastName _id");
+
+  const remaining_users = all_users.filter(
+    (user) => user._id.toString() !== req.user._id.toString()
+  );
+
+  res.status(200).json({
+    status: "success",
+    data: remaining_users,
+    message: "Users found successfully!",
+  });
+});
+
+exports.getRequests = catchAsync(async (req, res, next) => {
   const requests = await FriendRequest.find({ recipient: req.user._id })
     .populate("sender")
     .select("_id firstName lastName");
@@ -60,9 +79,9 @@ exports.getRequests = async (req, res, next) => {
     data: requests,
     message: "Requests found successfully!",
   });
-};
+});
 
-exports.getFriends = async (req, res, next) => {
+exports.getFriends = catchAsync(async (req, res, next) => {
   const this_user = await User.findById(req.user._id).populate(
     "friends",
     "_id firstName lastName"
@@ -72,13 +91,13 @@ exports.getFriends = async (req, res, next) => {
     data: this_user.friends,
     message: "Friends found successfully!",
   });
-};
+});
 
 /**
  * Authorization authentication token generation
  */
 
-exports.generateZegoToken = async (req, res, next) => {
+exports.generateZegoToken = catchAsync(async (req, res, next) => {
   const { userId, room_id } = req.body;
 
   const effectiveTimeInSeconds = 3600; //type: number; unit: s; token expiration time, unit: second
@@ -95,7 +114,7 @@ exports.generateZegoToken = async (req, res, next) => {
   const payload = JSON.stringify(payloadObject);
   // Build token
   const token = generateToken04(
-    appID*1, // APP ID NEEDS TO BE A NUMBER
+    appID * 1, // APP ID NEEDS TO BE A NUMBER
     userId,
     serverSecret,
     effectiveTimeInSeconds,
@@ -106,4 +125,54 @@ exports.generateZegoToken = async (req, res, next) => {
     message: "Token generated successfully",
     token,
   });
-};
+});
+
+exports.startAudioCall = catchAsync(async (req, res, next) => {
+  const from = req.user._id;
+  const to = req.body.id;
+
+  const from_user = await User.findById(from);
+
+  // create a new call audioCall Doc and send required data to client
+  const new_audio_call = await AudioCall.create({
+    participants: [from, to],
+    from,
+    to,
+    status: "Ongoing",
+  });
+
+  res.status(200).json({
+    data: {
+      from: from_user,
+      roomID: new_audio_call._id,
+      streamID: from,
+      userID: to,
+      userName: to,
+    },
+  });
+});
+
+exports.startVideoCall = catchAsync(async (req, res, next) => {
+  const from = req.user._id;
+  const to = req.body.id;
+
+  const from_user = await User.findById(from);
+
+  // create a new call videoCall Doc and send required data to client
+  const new_video_call = await VideoCall.create({
+    participants: [from, to],
+    from,
+    to,
+    status: "Ongoing",
+  });
+
+  res.status(200).json({
+    data: {
+      from: from_user,
+      roomID: new_video_call._id,
+      streamID: from,
+      userID: to,
+      userName: to,
+    },
+  });
+});

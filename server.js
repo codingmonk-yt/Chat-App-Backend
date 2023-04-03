@@ -79,10 +79,10 @@ io.on("connection", async (socket) => {
       recipient: data.to,
     });
     // emit event request received to recipient
-    io.to(to.socket_id).emit("new_friend_request", {
+    io.to(to?.socket_id).emit("new_friend_request", {
       message: "New friend request received",
     });
-    io.to(from.socket_id).emit("request_sent", {
+    io.to(from?.socket_id).emit("request_sent", {
       message: "Request Sent successfully!",
     });
   });
@@ -109,10 +109,10 @@ io.on("connection", async (socket) => {
     // emit event to both of them
 
     // emit event request accepted to both
-    io.to(sender.socket_id).emit("request_accepted", {
+    io.to(sender?.socket_id).emit("request_accepted", {
       message: "Friend Request Accepted",
     });
-    io.to(receiver.socket_id).emit("request_accepted", {
+    io.to(receiver?.socket_id).emit("request_accepted", {
       message: "Friend Request Accepted",
     });
   });
@@ -199,13 +199,13 @@ io.on("connection", async (socket) => {
 
     // emit incoming_message -> to user
 
-    io.to(to_user.socket_id).emit("new_message", {
+    io.to(to_user?.socket_id).emit("new_message", {
       conversation_id,
       message: new_message,
     });
 
     // emit outgoing_message -> from user
-    io.to(from_user.socket_id).emit("new_message", {
+    io.to(from_user?.socket_id).emit("new_message", {
       conversation_id,
       message: new_message,
     });
@@ -236,6 +236,8 @@ io.on("connection", async (socket) => {
     // emit outgoing_message -> from user
   });
 
+   // -------------- HANDLE AUDIO CALL SOCKET EVENTS ----------------- //
+
   // handle start_audio_call event
   socket.on("start_audio_call", async (data) => {
     const { from, to, roomID } = data;
@@ -243,16 +245,10 @@ io.on("connection", async (socket) => {
     const to_user = await User.findById(to);
     const from_user = await User.findById(from);
 
-    // create a new audio call record === log
-    await AudioCall.create({
-      participants: [from, to],
-      from,
-      to,
-      status: "Ongoing",
-    });
+    console.log("to_user", to_user);
 
     // send notification to receiver of call
-    io.to(to_user.socket_id).emit("audio_call_notification", {
+    io.to(to_user?.socket_id).emit("audio_call_notification", {
       from: from_user,
       roomID,
       streamID: from,
@@ -277,11 +273,13 @@ io.on("connection", async (socket) => {
     );
 
     // TODO => emit call_missed to receiver of call
-    io.to(to_user.socket_id).emit("audio_call_missed", {
+    io.to(to_user?.socket_id).emit("audio_call_missed", {
       from,
       to,
     });
   });
+
+  
 
   // handle audio_call_accepted
   socket.on("audio_call_accepted", async (data) => {
@@ -298,7 +296,7 @@ io.on("connection", async (socket) => {
     );
 
     // TODO => emit call_accepted to sender of call
-    io.to(from_user.socket_id).emit("audio_call_accepted", {
+    io.to(from_user?.socket_id).emit("audio_call_accepted", {
       from,
       to,
     });
@@ -319,7 +317,7 @@ io.on("connection", async (socket) => {
     const from_user = await User.findById(from);
     // TODO => emit call_denied to sender of call
 
-    io.to(from_user.socket_id).emit("audio_call_denied", {
+    io.to(from_user?.socket_id).emit("audio_call_denied", {
       from,
       to,
     });
@@ -338,29 +336,27 @@ io.on("connection", async (socket) => {
 
     const from_user = await User.findById(from);
     // TODO => emit on_another_audio_call to sender of call
-    io.to(from_user.socket_id).emit("on_another_audio_call", {
+    io.to(from_user?.socket_id).emit("on_another_audio_call", {
       from,
       to,
     });
   });
 
+  // --------------------- HANDLE VIDEO CALL SOCKET EVENTS ---------------------- //
+
   // handle start_video_call event
   socket.on("start_video_call", async (data) => {
     const { from, to, roomID } = data;
 
+    console.log(data);
+
     const to_user = await User.findById(to);
     const from_user = await User.findById(from);
 
-    // create a new video call record === log
-    await VideoCall.create({
-      participants: [from, to],
-      from,
-      to,
-      status: "Ongoing",
-    });
+    console.log("to_user", to_user);
 
     // send notification to receiver of call
-    io.to(to_user.socket_id).emit("video_call_notification", {
+    io.to(to_user?.socket_id).emit("video_call_notification", {
       from: from_user,
       roomID,
       streamID: from,
@@ -385,7 +381,7 @@ io.on("connection", async (socket) => {
     );
 
     // TODO => emit call_missed to receiver of call
-    io.to(to_user.socket_id).emit("video_call_missed", {
+    io.to(to_user?.socket_id).emit("video_call_missed", {
       from,
       to,
     });
@@ -406,7 +402,7 @@ io.on("connection", async (socket) => {
     );
 
     // TODO => emit call_accepted to sender of call
-    io.to(from_user.socket_id).emit("video_call_accepted", {
+    io.to(from_user?.socket_id).emit("video_call_accepted", {
       from,
       to,
     });
@@ -427,7 +423,7 @@ io.on("connection", async (socket) => {
     const from_user = await User.findById(from);
     // TODO => emit call_denied to sender of call
 
-    io.to(from_user.socket_id).emit("video_call_denied", {
+    io.to(from_user?.socket_id).emit("video_call_denied", {
       from,
       to,
     });
@@ -446,11 +442,13 @@ io.on("connection", async (socket) => {
 
     const from_user = await User.findById(from);
     // TODO => emit on_another_video_call to sender of call
-    io.to(from_user.socket_id).emit("on_another_video_call", {
+    io.to(from_user?.socket_id).emit("on_another_video_call", {
       from,
       to,
     });
   });
+
+  // -------------- HANDLE SOCKET DISCONNECTION ----------------- //
 
   socket.on("end", async (data) => {
     // Find user by ID and set status as offline
