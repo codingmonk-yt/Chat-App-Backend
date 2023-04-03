@@ -98,33 +98,41 @@ exports.getFriends = catchAsync(async (req, res, next) => {
  */
 
 exports.generateZegoToken = catchAsync(async (req, res, next) => {
-  const { userId, room_id } = req.body;
+  try{
+    const { userId, room_id } = req.body;
 
-  const effectiveTimeInSeconds = 3600; //type: number; unit: s; token expiration time, unit: second
-  const payloadObject = {
-    room_id, // Please modify to the user's roomID
-    // The token generated allows loginRoom (login room) action
-    // The token generated in this example allows publishStream (push stream) action
-    privilege: {
-      1: 1, // loginRoom: 1 pass , 0 not pass
-      2: 1, // publishStream: 1 pass , 0 not pass
-    },
-    stream_id_list: null,
-  }; //
-  const payload = JSON.stringify(payloadObject);
-  // Build token
-  const token = generateToken04(
-    appID * 1, // APP ID NEEDS TO BE A NUMBER
-    userId,
-    serverSecret,
-    effectiveTimeInSeconds,
-    payload
-  );
-  res.status(200).json({
-    status: "success",
-    message: "Token generated successfully",
-    token,
-  });
+    console.log(userId, room_id, "from generate zego token");
+
+    const effectiveTimeInSeconds = 3600; //type: number; unit: s; token expiration time, unit: second
+    const payloadObject = {
+      room_id, // Please modify to the user's roomID
+      // The token generated allows loginRoom (login room) action
+      // The token generated in this example allows publishStream (push stream) action
+      privilege: {
+        1: 1, // loginRoom: 1 pass , 0 not pass
+        2: 1, // publishStream: 1 pass , 0 not pass
+      },
+      stream_id_list: null,
+    }; //
+    const payload = JSON.stringify(payloadObject);
+    // Build token
+    const token = generateToken04(
+      appID * 1, // APP ID NEEDS TO BE A NUMBER
+      userId,
+      serverSecret,
+      effectiveTimeInSeconds,
+      payload
+    );
+    res.status(200).json({
+      status: "success",
+      message: "Token generated successfully",
+      token,
+    });
+  }
+  catch(err) {
+    console.log(err);
+  }
+  
 });
 
 exports.startAudioCall = catchAsync(async (req, res, next) => {
@@ -132,6 +140,7 @@ exports.startAudioCall = catchAsync(async (req, res, next) => {
   const to = req.body.id;
 
   const from_user = await User.findById(from);
+  const to_user = await User.findById(to);
 
   // create a new call audioCall Doc and send required data to client
   const new_audio_call = await AudioCall.create({
@@ -143,11 +152,11 @@ exports.startAudioCall = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     data: {
-      from: from_user,
+      from: to_user,
       roomID: new_audio_call._id,
-      streamID: from,
-      userID: to,
-      userName: to,
+      streamID: to,
+      userID: from,
+      userName: from,
     },
   });
 });
@@ -157,6 +166,7 @@ exports.startVideoCall = catchAsync(async (req, res, next) => {
   const to = req.body.id;
 
   const from_user = await User.findById(from);
+  const to_user = await User.findById(to);
 
   // create a new call videoCall Doc and send required data to client
   const new_video_call = await VideoCall.create({
@@ -168,11 +178,11 @@ exports.startVideoCall = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     data: {
-      from: from_user,
+      from: to_user,
       roomID: new_video_call._id,
-      streamID: from,
-      userID: to,
-      userName: to,
+      streamID: to,
+      userID: from,
+      userName: from,
     },
   });
 });
