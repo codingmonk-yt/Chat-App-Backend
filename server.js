@@ -168,10 +168,14 @@ io.on("connection", async (socket) => {
   });
 
   socket.on("get_messages", async (data, callback) => {
-    const { messages } = await OneToOneMessage.findById(
-      data.conversation_id
-    ).select("messages");
-    callback(messages);
+    try {
+      const { messages } = await OneToOneMessage.findById(
+        data.conversation_id
+      ).select("messages");
+      callback(messages);
+    } catch (error) {
+      console.log(error);
+    }
   });
 
   // Handle incoming text/link messages
