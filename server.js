@@ -62,10 +62,14 @@ io.on("connection", async (socket) => {
   console.log(`User connected ${socket.id}`);
 
   if (user_id != null && Boolean(user_id)) {
-    await User.findByIdAndUpdate(user_id, {
-      socket_id: socket.id,
-      status: "Online",
-    });
+    try {
+      User.findByIdAndUpdate(user_id, {
+        socket_id: socket.id,
+        status: "Online",
+      });
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   // We can write our socket event listeners in here...
