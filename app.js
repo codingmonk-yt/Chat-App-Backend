@@ -41,15 +41,12 @@ const cookieParser = require("cookie-parser"); // Parse Cookie header and popula
 const session = require("cookie-session"); // Simple cookie-based session middleware.
 
 
-const authRouter = require("./routes/auth");
-const userRouter = require("./routes/user");
-
 
 const app = express();
 
 app.use(
   cors({
-    origin: "*",
+    origin: "https://chat.codingmonk.in",
 
     methods: ["GET", "PATCH", "POST", "DELETE", "PUT"],
 
