@@ -61,7 +61,7 @@ io.on("connection", async (socket) => {
 
   console.log(`User connected ${socket.id}`);
 
-  if (Boolean(user_id)) {
+  if (user_id != null && Boolean(user_id)) {
     await User.findByIdAndUpdate(user_id, {
       socket_id: socket.id,
       status: "Online",
@@ -236,7 +236,7 @@ io.on("connection", async (socket) => {
     // emit outgoing_message -> from user
   });
 
-   // -------------- HANDLE AUDIO CALL SOCKET EVENTS ----------------- //
+  // -------------- HANDLE AUDIO CALL SOCKET EVENTS ----------------- //
 
   // handle start_audio_call event
   socket.on("start_audio_call", async (data) => {
@@ -278,8 +278,6 @@ io.on("connection", async (socket) => {
       to,
     });
   });
-
-  
 
   // handle audio_call_accepted
   socket.on("audio_call_accepted", async (data) => {
