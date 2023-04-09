@@ -46,7 +46,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://chat.codingmonk.in",
+    origin: "*",
 
     methods: ["GET", "PATCH", "POST", "DELETE", "PUT"],
 
